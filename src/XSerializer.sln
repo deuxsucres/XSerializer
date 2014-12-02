@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "deuxsucres.XSerializer", "deuxsucres.XSerializer\deuxsucres.XSerializer.csproj", "{DDCF355E-B3BA-4E01-ABE9-E974BA9784AE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Github", "Github", "{E6A78013-DA0C-4F76-976A-98EF5DBAFCC9}"
+	ProjectSection(SolutionItems) = preProject
+		..\README.md = ..\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{4EBC4588-35C2-4D46-98BB-123F3817C8B2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "deuxsucres.XSerializer.Tests", "deuxsucres.XSerializer.Tests\deuxsucres.XSerializer.Tests.csproj", "{5F3A9DAA-7FA3-4E2C-B38A-4891E91546A2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DDCF355E-B3BA-4E01-ABE9-E974BA9784AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDCF355E-B3BA-4E01-ABE9-E974BA9784AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDCF355E-B3BA-4E01-ABE9-E974BA9784AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDCF355E-B3BA-4E01-ABE9-E974BA9784AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F3A9DAA-7FA3-4E2C-B38A-4891E91546A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F3A9DAA-7FA3-4E2C-B38A-4891E91546A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F3A9DAA-7FA3-4E2C-B38A-4891E91546A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F3A9DAA-7FA3-4E2C-B38A-4891E91546A2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5F3A9DAA-7FA3-4E2C-B38A-4891E91546A2} = {4EBC4588-35C2-4D46-98BB-123F3817C8B2}
+	EndGlobalSection
+EndGlobal

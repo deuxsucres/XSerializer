@@ -1,4 +1,6 @@
 XSerializer
 ===========
 
-Small XML serializer
+Small XML serializer from [deuxsucres](http://www.deuxsucres.com).
+
+
