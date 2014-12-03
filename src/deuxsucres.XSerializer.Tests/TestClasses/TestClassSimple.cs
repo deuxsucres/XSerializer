@@ -14,5 +14,6 @@ namespace deuxsucres.XSerializer.Tests.TestClasses
         public DateTime Value4 { get; set; }
         public Int64 Value5 { get { return _Value5; } }
         public String Value6 = null;
+        public TestClassSimple Value7 = null;
     }
 }

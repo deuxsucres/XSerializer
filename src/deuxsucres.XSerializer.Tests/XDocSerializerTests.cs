@@ -1,6 +1,7 @@
 ﻿using deuxsucres.XSerializer.Tests.TestClasses;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -185,6 +186,405 @@ namespace deuxsucres.XSerializer.Tests
                 ser
                 );
 
+        }
+
+        #endregion
+
+        #region Populate
+
+        [Fact]
+        public void TestPopulate()
+        {
+            var serializer = new XDocSerializer();
+
+            var val = new TestClassSimple();
+            serializer.Populate(XDocument.Parse("<root><value1>Text</value1><VALUE2>987</VALUE2><value3>123.456</value3><value4>2014-06-08 11:44:56</value4><value5>123</value5></root>").Root, val);
+            Assert.Equal("Text", val.Value1);
+            Assert.Equal(987, val.Value2);
+            Assert.Equal(123.456, val.Value3);
+            Assert.Equal(new DateTime(2014, 6, 8, 11, 44, 56), val.Value4);
+            Assert.Equal(1, val.Value5);
+
+            val = new TestClassSimple();
+            serializer.Populate(XDocument.Parse("<root value1=\"Text\" VALUE2=\"987\" value3=\"123.456\" value4=\"2014-06-08 11:44:56\" value5=\"123\" />").Root, val);
+            Assert.Equal("Text", val.Value1);
+            Assert.Equal(987, val.Value2);
+            Assert.Equal(123.456, val.Value3);
+            Assert.Equal(new DateTime(2014, 6, 8, 11, 44, 56), val.Value4);
+            Assert.Equal(1, val.Value5);
+
+        }
+
+        [Fact]
+        public void TestPopulateList()
+        {
+            var serializer = new XDocSerializer();
+
+            List<String> list1 = new List<string>();
+            serializer.Populate(XDocument.Parse("<root><value1>Text</value1><VALUE2>987</VALUE2><value3>123.456</value3><value4>2014-06-08 11:44:56</value4><value5>123</value5></root>").Root, list1);
+            Assert.Equal(5, list1.Count);
+            Assert.Equal("Text", list1[0]);
+            Assert.Equal("987", list1[1]);
+            Assert.Equal("123.456", list1[2]);
+            Assert.Equal("2014-06-08 11:44:56", list1[3]);
+            Assert.Equal("123", list1[4]);
+
+        }
+
+        [Fact]
+        public void TestPopulateArray()
+        {
+            var serializer = new XDocSerializer();
+
+            String[] arr1 = new String[3];
+            serializer.Populate(XDocument.Parse("<root><value1>Text</value1><VALUE2>987</VALUE2><value3>123.456</value3><value4>2014-06-08 11:44:56</value4><value5>123</value5></root>").Root, arr1);
+            Assert.Equal("Text", arr1[0]);
+            Assert.Equal("987", arr1[1]);
+            Assert.Equal("123.456", arr1[2]);
+
+            arr1 = new String[8];
+            serializer.Populate(XDocument.Parse("<root><value1>Text</value1><VALUE2>987</VALUE2><value3>123.456</value3><value4>2014-06-08 11:44:56</value4><value5>123</value5></root>").Root, arr1);
+            Assert.Equal("Text", arr1[0]);
+            Assert.Equal("987", arr1[1]);
+            Assert.Equal("123.456", arr1[2]);
+            Assert.Equal("2014-06-08 11:44:56", arr1[3]);
+            Assert.Equal("123", arr1[4]);
+            Assert.Equal(null, arr1[5]);
+            Assert.Equal(null, arr1[6]);
+            Assert.Equal(null, arr1[7]);
+
+            // Null arguments
+            Assert.Throws<ArgumentNullException>(() => serializer.Populate(null, ""));
+            Assert.Throws<ArgumentNullException>(() => serializer.Populate(XDocument.Parse("<root><value1>Text</value1></root>").Root, null));
+            // With string
+            Assert.Throws<ArgumentException>(() => serializer.Populate(XDocument.Parse("<root><value1>Text</value1></root>").Root, ""));
+            // With value type
+            Assert.Throws<ArgumentException>(() => serializer.Populate(XDocument.Parse("<root><value1>Text</value1></root>").Root, 1234));
+            // With Enum
+            Assert.Throws<ArgumentException>(() => serializer.Populate(XDocument.Parse("<root><value1>Text</value1></root>").Root, StringComparison.OrdinalIgnoreCase));
+        }
+
+        [Fact]
+        public void TestPopulateDictionary()
+        {
+            var serializer = new XDocSerializer();
+
+            var val = new Dictionary<String, object>(StringComparer.OrdinalIgnoreCase);
+            serializer.Populate(XDocument.Parse(
+                @"<root val1=""ABC"">
+<value1>Text</value1>
+<VALUE2>987</VALUE2>
+<value3>123.456</value3>
+<value4>2014-06-08 11:44:56</value4>
+<value5>
+    <val1>Un</val1>
+    <val2>2</val2>
+    <val3>2.4</val3>
+    <val4>2014-06-08 11:44:56</val4>
+</value5>
+</root>").Root,
+            val);
+            Assert.Equal(
+                new string[] { "val1", "value1", "VALUE2", "value3", "value4", "value5" },
+                val.Keys.ToArray()
+                );
+            Assert.Equal("ABC", val["val1"]);
+            Assert.Equal("Text", val["value1"]);
+            Assert.Equal((Int64)987, val["value2"]);
+            Assert.Equal(123.456, val["value3"]);
+            Assert.Equal(new DateTime(2014, 6, 8, 11, 44, 56), val["value4"]);
+            Assert.IsType<Dictionary<String, Object>>(val["value5"]);
+
+            var dic2 = (Dictionary<String, Object>)val["value5"];
+            Assert.Equal("Un", dic2["val1"]);
+            Assert.Equal((Int64)2, dic2["val2"]);
+            Assert.Equal(2.4, dic2["val3"]);
+            Assert.Equal(new DateTime(2014, 6, 8, 11, 44, 56), dic2["val4"]);
+        }
+
+        #endregion
+
+        #region Deserialization : simple values
+
+        [Fact]
+        public void TestDeserializeError()
+        {
+            var serializer = new XDocSerializer();
+            Assert.Throws<ArgumentNullException>(() => serializer.Deserialize<String>(null));
+            Assert.Throws<ArgumentNullException>(() => serializer.Deserialize(null));
+        }
+
+        [Fact]
+        public void TestDeserializeString()
+        {
+            var serializer = new XDocSerializer();
+            Assert.Equal("Test", serializer.Deserialize<String>(XDocument.Parse("<root>Test</root>").Root));
+            Assert.Equal("Test", serializer.Deserialize(XDocument.Parse("<root>Test</root>").Root));
+        }
+
+        [Fact]
+        public void TestDeserializeBool()
+        {
+            var serializer = new XDocSerializer();
+            Assert.Equal(false, serializer.Deserialize<bool>(XDocument.Parse("<root>-16</root>").Root));
+            Assert.Equal(true, serializer.Deserialize<bool>(XDocument.Parse("<root>TRUE</root>").Root));
+            Assert.Equal(false, serializer.Deserialize<bool>(XDocument.Parse("<root>false</root>").Root));
+            Assert.Equal(null, serializer.Deserialize<bool?>(XDocument.Parse("<root>-16</root>").Root));
+            Assert.Equal(true, serializer.Deserialize<bool?>(XDocument.Parse("<root>true</root>").Root));
+            Assert.Equal(false, serializer.Deserialize<bool?>(XDocument.Parse("<root>FALSE</root>").Root));
+            Assert.Equal(true, serializer.Deserialize(XDocument.Parse("<root>true</root>").Root));
+            Assert.Equal(false, serializer.Deserialize(XDocument.Parse("<root>false</root>").Root));
+        }
+
+        [Fact]
+        public void TestDeserializeInt16()
+        {
+            var serializer = new XDocSerializer();
+            Assert.Equal(-16, serializer.Deserialize<Int16>(XDocument.Parse("<root>-16</root>").Root));
+            Assert.Equal((Int64)(-16), serializer.Deserialize(XDocument.Parse("<root>-16</root>").Root));
+        }
+
+        [Fact]
+        public void TestDeserializeInt32()
+        {
+            var serializer = new XDocSerializer();
+            Assert.Equal(32, serializer.Deserialize<Int32>(XDocument.Parse("<root>32</root>").Root));
+            Assert.Equal((Int64)32, serializer.Deserialize(XDocument.Parse("<root>32</root>").Root));
+        }
+
+        [Fact]
+        public void TestDeserializeInt64()
+        {
+            var serializer = new XDocSerializer();
+            Assert.Equal(64, serializer.Deserialize<Int64>(XDocument.Parse("<root>64</root>").Root));
+        }
+
+        [Fact]
+        public void TestDeserializeUInt16()
+        {
+            var serializer = new XDocSerializer();
+            Assert.Equal((UInt16)16, serializer.Deserialize<UInt16>(XDocument.Parse("<root>16</root>").Root));
+        }
+
+        [Fact]
+        public void TestDeserializeUInt32()
+        {
+            var serializer = new XDocSerializer();
+            Assert.Equal((UInt32)32, serializer.Deserialize<UInt32>(XDocument.Parse("<root>32</root>").Root));
+        }
+
+        [Fact]
+        public void TestDeserializeUInt64()
+        {
+            var serializer = new XDocSerializer();
+            Assert.Equal((UInt64)64, serializer.Deserialize<UInt64>(XDocument.Parse("<root>64</root>").Root));
+        }
+
+        [Fact]
+        public void TestDeserializeSingle()
+        {
+            var serializer = new XDocSerializer();
+            Assert.Equal((Single)123.45, serializer.Deserialize<Single>(XDocument.Parse("<root>123.45</root>").Root));
+            Assert.Equal((Double)123.45, serializer.Deserialize(XDocument.Parse("<root>123.45</root>").Root));
+        }
+
+        [Fact]
+        public void TestDeserializeDouble()
+        {
+            var serializer = new XDocSerializer();
+            Assert.Equal((Double)123.45, serializer.Deserialize<Double>(XDocument.Parse("<root>123.45</root>").Root));
+            Assert.Equal((Double)123.45, serializer.Deserialize(XDocument.Parse("<root>123.45</root>").Root));
+        }
+
+        [Fact]
+        public void TestDeserializeDecimal()
+        {
+            var serializer = new XDocSerializer();
+            Assert.Equal(123.45m, serializer.Deserialize<Decimal>(XDocument.Parse("<root>123.45</root>").Root));
+        }
+
+        [Fact]
+        public void TestDeserializeDateTime()
+        {
+            var serializer = new XDocSerializer();
+            Assert.Equal(new DateTime(2014, 8, 6), serializer.Deserialize<DateTime>(XDocument.Parse("<root>2014/08/06</root>").Root));
+            Assert.Equal(new DateTime(2014, 8, 6, 11, 44, 56), serializer.Deserialize<DateTime>(XDocument.Parse("<root>2014/08/06 11:44:56</root>").Root));
+            Assert.Equal(new DateTime(2014, 6, 8), serializer.Deserialize<DateTime>(XDocument.Parse("<root>2014-06-08</root>").Root));
+            Assert.Equal(new DateTime(2014, 6, 8, 11, 44, 56), serializer.Deserialize<DateTime>(XDocument.Parse("<root>2014-06-08 11:44:56</root>").Root));
+
+            Assert.Equal(new DateTime(2014, 8, 6), serializer.Deserialize(XDocument.Parse("<root>2014/08/06</root>").Root));
+            Assert.Equal(new DateTime(2014, 8, 6, 11, 44, 56), serializer.Deserialize(XDocument.Parse("<root>2014/08/06 11:44:56</root>").Root));
+            Assert.Equal(new DateTime(2014, 6, 8), serializer.Deserialize(XDocument.Parse("<root>2014-06-08</root>").Root));
+            Assert.Equal(new DateTime(2014, 6, 8, 11, 44, 56), serializer.Deserialize(XDocument.Parse("<root>2014-06-08 11:44:56</root>").Root));
+        }
+
+        #endregion
+
+        #region Deserialization : object
+
+        [Fact]
+        public void TestDeserializeClass()
+        {
+            var serializer = new XDocSerializer();
+
+            var val = serializer.Deserialize<TestClassSimple>(XDocument.Parse("<root>2014/08/06</root>").Root);
+            Assert.Equal(null, val.Value1);
+            Assert.Equal(0, val.Value2);
+            Assert.Equal(0.0, val.Value3);
+            Assert.Equal(DateTime.MinValue, val.Value4);
+
+            val = serializer.Deserialize<TestClassSimple>(XDocument.Parse(@"
+<root>
+    <value1>Text</value1>
+    <VALUE2>987</VALUE2>
+    <value3>123.456</value3>
+    <value4>2014-06-08 11:44:56</value4>
+    <value5>123</value5>
+    <value7>
+        <value1>DEUX</value1>
+        <value2>3</value2>
+        <value3>4.5</value3>
+        <value4>2014-12-03 19:43:56</value4>
+    </value7>
+</root>
+").Root);
+            Assert.Equal("Text", val.Value1);
+            Assert.Equal(987, val.Value2);
+            Assert.Equal(123.456, val.Value3);
+            Assert.Equal(new DateTime(2014, 6, 8, 11, 44, 56), val.Value4);
+            Assert.Equal(1, val.Value5);
+            Assert.NotNull(val.Value7);
+            Assert.Equal("DEUX", val.Value7.Value1);
+            Assert.Equal(3, val.Value7.Value2);
+            Assert.Equal(4.5, val.Value7.Value3);
+            Assert.Equal(new DateTime(2014, 12, 3, 19, 43, 56), val.Value7.Value4);
+            Assert.Equal(1, val.Value7.Value5);
+
+            val = serializer.Deserialize<TestClassSimple>(XDocument.Parse("<root value1=\"Text\" VALUE2=\"987\" value3=\"123.456\" value4=\"2014-06-08 11:44:56\" value5=\"123\" />").Root);
+            Assert.Equal("Text", val.Value1);
+            Assert.Equal(987, val.Value2);
+            Assert.Equal(123.456, val.Value3);
+            Assert.Equal(new DateTime(2014, 6, 8, 11, 44, 56), val.Value4);
+            Assert.Equal(1, val.Value5);
+
+            // Null arguments
+            Assert.Throws<ArgumentNullException>(() => serializer.Deserialize(null, typeof(TestClassSimple)));
+            Assert.Throws<ArgumentNullException>(() => serializer.Deserialize(XDocument.Parse("<root><value1>Text</value1></root>").Root, null));
+
+            // Attribute to object
+            Assert.Throws<ArgumentNullException>(() => serializer.Deserialize(XDocument.Parse("<root value7=\"123\"><value1>Text</value1></root>").Root, null));
+        }
+
+        [Fact]
+        public void TestDeserializeList()
+        {
+            var serializer = new XDocSerializer();
+
+            IList<String> list1 = serializer.Deserialize<IList<String>>(XDocument.Parse("<root><value1>Text</value1><VALUE2>987</VALUE2><value3>123.456</value3><value4>2014-06-08 11:44:56</value4><value5>123</value5></root>").Root);
+            Assert.IsType<List<String>>(list1);
+            Assert.Equal(5, list1.Count);
+            Assert.Equal("Text", list1[0]);
+            Assert.Equal("987", list1[1]);
+            Assert.Equal("123.456", list1[2]);
+            Assert.Equal("2014-06-08 11:44:56", list1[3]);
+            Assert.Equal("123", list1[4]);
+
+            List<String> list2 = serializer.Deserialize<List<String>>(XDocument.Parse("<root><value1>Text</value1><VALUE2>987</VALUE2><value3>123.456</value3><value4>2014-06-08 11:44:56</value4><value5>123</value5></root>").Root);
+            Assert.Equal(5, list2.Count);
+            Assert.Equal("Text", list2[0]);
+            Assert.Equal("987", list2[1]);
+            Assert.Equal("123.456", list2[2]);
+            Assert.Equal("2014-06-08 11:44:56", list2[3]);
+            Assert.Equal("123", list2[4]);
+
+            Collection<String> list3 = serializer.Deserialize<Collection<String>>(XDocument.Parse("<root><value1>Text</value1><VALUE2>987</VALUE2><value3>123.456</value3><value4>2014-06-08 11:44:56</value4><value5>123</value5></root>").Root);
+            Assert.Equal(5, list3.Count);
+            Assert.Equal("Text", list3[0]);
+            Assert.Equal("987", list3[1]);
+            Assert.Equal("123.456", list3[2]);
+            Assert.Equal("2014-06-08 11:44:56", list3[3]);
+            Assert.Equal("123", list3[4]);
+        }
+
+        [Fact]
+        public void TestDeserializeArray()
+        {
+            var serializer = new XDocSerializer();
+
+            String[] arr1 = serializer.Deserialize<String[]>(XDocument.Parse("<root><value1>Text</value1><VALUE2>987</VALUE2><value3>123.456</value3><value4>2014-06-08 11:44:56</value4><value5>123</value5></root>").Root);
+            Assert.Equal(5, arr1.Length);
+            Assert.Equal("Text", arr1[0]);
+            Assert.Equal("987", arr1[1]);
+            Assert.Equal("123.456", arr1[2]);
+            Assert.Equal("2014-06-08 11:44:56", arr1[3]);
+            Assert.Equal("123", arr1[4]);
+
+        }
+
+        [Fact]
+        public void TestDeserializeDictionary()
+        {
+            var serializer = new XDocSerializer();
+
+            var dic1 = serializer.Deserialize<Dictionary<String, object>>(XDocument.Parse(
+                @"<root val1=""ABC"">
+<value1>Text</value1>
+<VALUE2>987</VALUE2>
+<value3>123.456</value3>
+<value4>2014-06-08 11:44:56</value4>
+<value5>
+    <val1>Un</val1>
+    <val2>2</val2>
+    <val3>2.4</val3>
+    <val4>2014-06-08 11:44:56</val4>
+</value5>
+</root>").Root);
+            Assert.Equal(
+                new string[] { "val1", "value1", "VALUE2", "value3", "value4", "value5" },
+                dic1.Keys.ToArray()
+                );
+            Assert.Equal("ABC", dic1["val1"]);
+            Assert.Equal("Text", dic1["value1"]);
+            Assert.Equal((Int64)987, dic1["VALUE2"]);
+            Assert.Equal(123.456, dic1["value3"]);
+            Assert.Equal(new DateTime(2014, 6, 8, 11, 44, 56), dic1["value4"]);
+            Assert.IsType<Dictionary<String, Object>>(dic1["value5"]);
+
+            var sdic1 = (Dictionary<String, Object>)dic1["value5"];
+            Assert.Equal("Un", sdic1["val1"]);
+            Assert.Equal((Int64)2, sdic1["val2"]);
+            Assert.Equal(2.4, sdic1["val3"]);
+            Assert.Equal(new DateTime(2014, 6, 8, 11, 44, 56), sdic1["val4"]);
+
+            var dic2 = serializer.Deserialize<IDictionary<String, object>>(XDocument.Parse(
+                @"<root val1=""ABC"">
+<value1>Text</value1>
+<VALUE2>987</VALUE2>
+<value3>123.456</value3>
+<value4>2014-06-08 11:44:56</value4>
+<value5>
+    <val1>Un</val1>
+    <val2>2</val2>
+    <val3>2.4</val3>
+    <val4>2014-06-08 11:44:56</val4>
+</value5>
+</root>").Root);
+            Assert.Equal(
+                new string[] { "val1", "value1", "VALUE2", "value3", "value4", "value5" },
+                dic1.Keys.ToArray()
+                );
+            Assert.Equal("ABC", dic2["val1"]);
+            Assert.Equal("Text", dic2["value1"]);
+            Assert.Equal((Int64)987, dic2["value2"]);
+            Assert.Equal(123.456, dic2["value3"]);
+            Assert.Equal(new DateTime(2014, 6, 8, 11, 44, 56), dic2["value4"]);
+            Assert.IsType<Dictionary<String, Object>>(dic2["value5"]);
+
+            sdic1 = (Dictionary<String, Object>)dic2["value5"];
+            Assert.Equal("Un", sdic1["val1"]);
+            Assert.Equal((Int64)2, sdic1["val2"]);
+            Assert.Equal(2.4, sdic1["val3"]);
+            Assert.Equal(new DateTime(2014, 6, 8, 11, 44, 56), sdic1["val4"]);
         }
 
         #endregion
