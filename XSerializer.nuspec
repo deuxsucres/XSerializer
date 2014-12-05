@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>XSerializer</id>
+    <version>1.0.0</version>
+    <authors>deuxsucres</authors>
+    <owners>deuxsucres</owners>
+    <licenseUrl>https://github.com/deuxsucres/XSerializer/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/deuxsucres/XSerializer</projectUrl>
+    <description>A small library to serialize and deserialize objects and values from XML</description>
+    <releaseNotes>First version of a small XML serializer library.</releaseNotes>
+    <copyright>Copyright deuxsucres 2014</copyright>
+    <tags>XSerializer xml seralizer</tags>
+  </metadata>
+  <files> 
+    <file src="src\deuxsucres.XSerializer\bin\Release\deuxsucres.XSerializer.dll" target="lib\portable-net403+sl5+netcore45+wp8+MonoAndroid1+MonoTouch1\" /> 
+  </files> 
+</package>
