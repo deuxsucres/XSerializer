@@ -118,6 +118,10 @@ namespace deuxsucres.XSerializer.Tests
             node2 = new XElement("root");
             serializer.Serialize(list, node2);
             Assert.Equal("<root><root><Value3>67.89</Value3><Value2>23</Value2><Value4>2014-06-08 11:44:56Z</Value4><Value5>1</Value5></root><root><Value3>-12.67</Value3><Value1>Texte</Value1><Value2>98</Value2><Value4>2014-06-08 11:44:56Z</Value4><Value5>1</Value5></root></root>", node2.ToString(SaveOptions.DisableFormatting));
+
+            node2 = new XElement("roots");
+            serializer.Serialize(new String[] { "Un", "Deux", "Trois" }, node2);
+            Assert.Equal("<roots><root>Un</root><root>Deux</root><root>Trois</root></roots>", node2.ToString(SaveOptions.DisableFormatting));
         }
 
         [Fact]
