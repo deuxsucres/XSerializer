@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>XSerializer</id>
+    <id>deuxsucres.XSerializer</id>
     <version>1.0.0</version>
     <authors>deuxsucres</authors>
     <owners>deuxsucres</owners>
