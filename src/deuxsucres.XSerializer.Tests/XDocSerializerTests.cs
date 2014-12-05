@@ -68,7 +68,7 @@ namespace deuxsucres.XSerializer.Tests
                 Value3 = 67.89,
                 Value4 = dt
             });
-            Assert.Equal("<TestClassSimple><Value3>67.89</Value3><Value2>23</Value2><Value4>2014-06-08 11:44:56Z</Value4></TestClassSimple>", node1.ToString(SaveOptions.DisableFormatting));
+            Assert.Equal("<TestClassSimple><Value3>67.89</Value3><Value2>23</Value2><Value4>2014-06-08 11:44:56Z</Value4><Value5>1</Value5></TestClassSimple>", node1.ToString(SaveOptions.DisableFormatting));
             Assert.Throws<ArgumentException>(() => serializer.Serialize(123));
             Assert.Throws<ArgumentNullException>(() => serializer.Serialize(null));
             Assert.Throws<ArgumentException>(() => serializer.Serialize(new TestClassSimple(), String.Empty));
@@ -80,7 +80,7 @@ namespace deuxsucres.XSerializer.Tests
                 Value3 = 67.89,
                 Value4 = dt
             }, node2);
-            Assert.Equal("<root><Value3>67.89</Value3><Value2>23</Value2><Value4>2014-06-08 11:44:56Z</Value4></root>", node2.ToString(SaveOptions.DisableFormatting));
+            Assert.Equal("<root><Value3>67.89</Value3><Value2>23</Value2><Value4>2014-06-08 11:44:56Z</Value4><Value5>1</Value5></root>", node2.ToString(SaveOptions.DisableFormatting));
         }
 
         [Fact]
@@ -105,16 +105,16 @@ namespace deuxsucres.XSerializer.Tests
             var list = new List<TestClassSimple>(array);
 
             var node1 = serializer.Serialize(array);
-            Assert.Equal("<TestClassSimples><TestClassSimple><Value3>67.89</Value3><Value2>23</Value2><Value4>2014-06-08 11:44:56Z</Value4></TestClassSimple><TestClassSimple><Value3>-12.67</Value3><Value1>Texte</Value1><Value2>98</Value2><Value4>2014-06-08 11:44:56Z</Value4></TestClassSimple></TestClassSimples>", node1.ToString(SaveOptions.DisableFormatting));
+            Assert.Equal("<TestClassSimples><TestClassSimple><Value3>67.89</Value3><Value2>23</Value2><Value4>2014-06-08 11:44:56Z</Value4><Value5>1</Value5></TestClassSimple><TestClassSimple><Value3>-12.67</Value3><Value1>Texte</Value1><Value2>98</Value2><Value4>2014-06-08 11:44:56Z</Value4><Value5>1</Value5></TestClassSimple></TestClassSimples>", node1.ToString(SaveOptions.DisableFormatting));
             node1 = serializer.Serialize(list);
-            Assert.Equal("<TestClassSimples><TestClassSimple><Value3>67.89</Value3><Value2>23</Value2><Value4>2014-06-08 11:44:56Z</Value4></TestClassSimple><TestClassSimple><Value3>-12.67</Value3><Value1>Texte</Value1><Value2>98</Value2><Value4>2014-06-08 11:44:56Z</Value4></TestClassSimple></TestClassSimples>", node1.ToString(SaveOptions.DisableFormatting));
+            Assert.Equal("<TestClassSimples><TestClassSimple><Value3>67.89</Value3><Value2>23</Value2><Value4>2014-06-08 11:44:56Z</Value4><Value5>1</Value5></TestClassSimple><TestClassSimple><Value3>-12.67</Value3><Value1>Texte</Value1><Value2>98</Value2><Value4>2014-06-08 11:44:56Z</Value4><Value5>1</Value5></TestClassSimple></TestClassSimples>", node1.ToString(SaveOptions.DisableFormatting));
 
             var node2 = new XElement("root");
             serializer.Serialize(array, node2);
-            Assert.Equal("<root><root><Value3>67.89</Value3><Value2>23</Value2><Value4>2014-06-08 11:44:56Z</Value4></root><root><Value3>-12.67</Value3><Value1>Texte</Value1><Value2>98</Value2><Value4>2014-06-08 11:44:56Z</Value4></root></root>", node2.ToString(SaveOptions.DisableFormatting));
+            Assert.Equal("<root><root><Value3>67.89</Value3><Value2>23</Value2><Value4>2014-06-08 11:44:56Z</Value4><Value5>1</Value5></root><root><Value3>-12.67</Value3><Value1>Texte</Value1><Value2>98</Value2><Value4>2014-06-08 11:44:56Z</Value4><Value5>1</Value5></root></root>", node2.ToString(SaveOptions.DisableFormatting));
             node2 = new XElement("root");
             serializer.Serialize(list, node2);
-            Assert.Equal("<root><root><Value3>67.89</Value3><Value2>23</Value2><Value4>2014-06-08 11:44:56Z</Value4></root><root><Value3>-12.67</Value3><Value1>Texte</Value1><Value2>98</Value2><Value4>2014-06-08 11:44:56Z</Value4></root></root>", node2.ToString(SaveOptions.DisableFormatting));
+            Assert.Equal("<root><root><Value3>67.89</Value3><Value2>23</Value2><Value4>2014-06-08 11:44:56Z</Value4><Value5>1</Value5></root><root><Value3>-12.67</Value3><Value1>Texte</Value1><Value2>98</Value2><Value4>2014-06-08 11:44:56Z</Value4><Value5>1</Value5></root></root>", node2.ToString(SaveOptions.DisableFormatting));
         }
 
         [Fact]
@@ -139,16 +139,16 @@ namespace deuxsucres.XSerializer.Tests
             System.Collections.IEnumerable list = new List<Object>(array);
 
             var node1 = serializer.Serialize(array);
-            Assert.Equal("<Objects><Object><Value3>67.89</Value3><Value2>23</Value2><Value4>2014-06-08 11:44:56Z</Value4></Object><Object><Value3>-12.67</Value3><Value1>Texte</Value1><Value2>98</Value2><Value4>2014-06-08 11:44:56Z</Value4></Object></Objects>", node1.ToString(SaveOptions.DisableFormatting));
+            Assert.Equal("<Objects><Object><Value3>67.89</Value3><Value2>23</Value2><Value4>2014-06-08 11:44:56Z</Value4><Value5>1</Value5></Object><Object><Value3>-12.67</Value3><Value1>Texte</Value1><Value2>98</Value2><Value4>2014-06-08 11:44:56Z</Value4><Value5>1</Value5></Object></Objects>", node1.ToString(SaveOptions.DisableFormatting));
             node1 = serializer.Serialize(list);
-            Assert.Equal("<Items><Item><Value3>67.89</Value3><Value2>23</Value2><Value4>2014-06-08 11:44:56Z</Value4></Item><Item><Value3>-12.67</Value3><Value1>Texte</Value1><Value2>98</Value2><Value4>2014-06-08 11:44:56Z</Value4></Item></Items>", node1.ToString(SaveOptions.DisableFormatting));
+            Assert.Equal("<Items><Item><Value3>67.89</Value3><Value2>23</Value2><Value4>2014-06-08 11:44:56Z</Value4><Value5>1</Value5></Item><Item><Value3>-12.67</Value3><Value1>Texte</Value1><Value2>98</Value2><Value4>2014-06-08 11:44:56Z</Value4><Value5>1</Value5></Item></Items>", node1.ToString(SaveOptions.DisableFormatting));
 
             var node2 = new XElement("root");
             serializer.Serialize(array, node2);
-            Assert.Equal("<root><root><Value3>67.89</Value3><Value2>23</Value2><Value4>2014-06-08 11:44:56Z</Value4></root><root><Value3>-12.67</Value3><Value1>Texte</Value1><Value2>98</Value2><Value4>2014-06-08 11:44:56Z</Value4></root></root>", node2.ToString(SaveOptions.DisableFormatting));
+            Assert.Equal("<root><root><Value3>67.89</Value3><Value2>23</Value2><Value4>2014-06-08 11:44:56Z</Value4><Value5>1</Value5></root><root><Value3>-12.67</Value3><Value1>Texte</Value1><Value2>98</Value2><Value4>2014-06-08 11:44:56Z</Value4><Value5>1</Value5></root></root>", node2.ToString(SaveOptions.DisableFormatting));
             node2 = new XElement("root");
             serializer.Serialize(list, node2);
-            Assert.Equal("<root><root><Value3>67.89</Value3><Value2>23</Value2><Value4>2014-06-08 11:44:56Z</Value4></root><root><Value3>-12.67</Value3><Value1>Texte</Value1><Value2>98</Value2><Value4>2014-06-08 11:44:56Z</Value4></root></root>", node2.ToString(SaveOptions.DisableFormatting));
+            Assert.Equal("<root><root><Value3>67.89</Value3><Value2>23</Value2><Value4>2014-06-08 11:44:56Z</Value4><Value5>1</Value5></root><root><Value3>-12.67</Value3><Value1>Texte</Value1><Value2>98</Value2><Value4>2014-06-08 11:44:56Z</Value4><Value5>1</Value5></root></root>", node2.ToString(SaveOptions.DisableFormatting));
         }
 
         [Fact]
@@ -189,6 +189,86 @@ namespace deuxsucres.XSerializer.Tests
                         "<Value1>Un</Value1>" +
                         "<Value2>2</Value2>" +
                         "<Value4>2014-06-08 11:44:56Z</Value4>" +
+                        "<Value5>1</Value5>" +
+                    "</value5>" +
+                    "<value6>" +
+                        "<val1>Un</val1>" +
+                        "<val2>4</val2>" +
+                        "<val3>78.89</val3>" +
+                        "<val4>2014-06-08 11:44:56Z</val4>" +
+                    "</value6>" +
+                "</root>",
+                ser
+                );
+
+        }
+
+        [Fact]
+        public void TestAnonymousObject()
+        {
+            var target = new XDocSerializer();
+
+            var obj1 = new {
+                val1 = "ABC",
+                value1 = "Text",
+                VALUE2 = 987,
+                value3 = 123.456,
+                value4 = new DateTime(2014, 6, 8, 11, 44, 56),
+                value5 = new TestClassSimple() {
+                    Value1 = "Un",
+                    Value2 = 2,
+                    Value3 = 2.4,
+                    Value4 = new DateTime(2014, 6, 8, 11, 44, 56)
+                },
+                value6 = new {
+                    val1 = "Un",
+                    val2 = 4,
+                    val3 = 78.89,
+                    val4 = new DateTime(2014, 6, 8, 11, 44, 56)
+                }
+            };
+
+            var ser = target.Serialize(obj1).ToString(SaveOptions.DisableFormatting);
+
+            Assert.Equal(
+                "<f__AnonymousType17>" +
+                    "<val1>ABC</val1>" +
+                    "<value1>Text</value1>" +
+                    "<VALUE2>987</VALUE2>" +
+                    "<value3>123.456</value3>" +
+                    "<value4>2014-06-08 11:44:56Z</value4>" +
+                    "<value5>" +
+                        "<Value3>2.4</Value3>" +
+                        "<Value1>Un</Value1>" +
+                        "<Value2>2</Value2>" +
+                        "<Value4>2014-06-08 11:44:56Z</Value4>" +
+                        "<Value5>1</Value5>" +
+                    "</value5>" +
+                    "<value6>" +
+                        "<val1>Un</val1>" +
+                        "<val2>4</val2>" +
+                        "<val3>78.89</val3>" +
+                        "<val4>2014-06-08 11:44:56Z</val4>" +
+                    "</value6>" +
+                "</f__AnonymousType17>",
+                ser
+                );
+
+            ser = target.Serialize(obj1, "root").ToString(SaveOptions.DisableFormatting);
+
+            Assert.Equal(
+                "<root>" +
+                    "<val1>ABC</val1>" +
+                    "<value1>Text</value1>" +
+                    "<VALUE2>987</VALUE2>" +
+                    "<value3>123.456</value3>" +
+                    "<value4>2014-06-08 11:44:56Z</value4>" +
+                    "<value5>" +
+                        "<Value3>2.4</Value3>" +
+                        "<Value1>Un</Value1>" +
+                        "<Value2>2</Value2>" +
+                        "<Value4>2014-06-08 11:44:56Z</Value4>" +
+                        "<Value5>1</Value5>" +
                     "</value5>" +
                     "<value6>" +
                         "<val1>Un</val1>" +

@@ -197,7 +197,6 @@ namespace deuxsucres.XSerializer
             // For each property
             foreach (var property in typeValue.GetProperties())
             {
-                if (!property.CanWrite) continue;
                 var v = property.GetValue(value, null);
                 if (v == null) continue;
                 var x = new XElement(property.Name);
