@@ -13,6 +13,6 @@
     <tags>XSerializer xml seralizer</tags>
   </metadata>
   <files> 
-    <file src="src\deuxsucres.XSerializer\bin\Release\deuxsucres.XSerializer.dll" target="lib\portable-net403+sl5+netcore45+wp8+MonoAndroid1+MonoTouch1\" /> 
+    <file src="bin\Release\deuxsucres.XSerializer.dll" target="lib\portable-net403+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\" /> 
   </files> 
 </package>
