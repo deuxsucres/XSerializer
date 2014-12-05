@@ -106,13 +106,13 @@ namespace deuxsucres.XSerializer
         {
             if (value == null) throw new ArgumentNullException("value");
             var type = value.GetType();
-            if (nodeName == null) nodeName = NodeNameFromType(type);
 
             // Check is an object
             if (value is String || (!type.IsClass && type.IsValueType))
                 throw new ArgumentException(String.Format("The value of type '{0}' is not an object.", type.FullName), "value");
 
             // Prepare element and serialize it
+            if (nodeName == null) nodeName = NodeNameFromType(type);
             XElement result = new XElement(nodeName);
             InternalSerialize(value, result, type);
             return result;

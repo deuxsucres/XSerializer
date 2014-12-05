@@ -42,6 +42,22 @@ namespace deuxsucres.XSerializer.Tests
         #region Serialization
 
         [Fact]
+        public void TestSerializeValues()
+        {
+            var serializer = new XDocSerializer();
+
+            Assert.Throws<ArgumentException>(() => serializer.Serialize(123));
+            Assert.Throws<ArgumentException>(() => serializer.Serialize(123.456));
+            Assert.Throws<ArgumentException>(() => serializer.Serialize(DateTime.Now));
+            Assert.Throws<ArgumentException>(() => serializer.Serialize(true));
+            Assert.Throws<ArgumentException>(() => serializer.Serialize("Text"));
+
+            // Invalid arguments
+            Assert.Throws<ArgumentNullException>(() => serializer.Serialize(null, (XElement)null));
+            Assert.Throws<ArgumentNullException>(() => serializer.Serialize(new TestClassSimple(), (XElement)null));
+        }
+
+        [Fact]
         public void TestSerializeClass()
         {
             var serializer = new XDocSerializer();
@@ -65,8 +81,6 @@ namespace deuxsucres.XSerializer.Tests
                 Value4 = dt
             }, node2);
             Assert.Equal("<root><Value3>67.89</Value3><Value2>23</Value2><Value4>2014-06-08 11:44:56Z</Value4></root>", node2.ToString(SaveOptions.DisableFormatting));
-            Assert.Throws<ArgumentNullException>(() => serializer.Serialize(null, (XElement)null));
-            Assert.Throws<ArgumentNullException>(() => serializer.Serialize(new TestClassSimple(), (XElement)null));
         }
 
         [Fact]
