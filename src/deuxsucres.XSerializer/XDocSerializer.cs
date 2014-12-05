@@ -48,6 +48,14 @@ namespace deuxsucres.XSerializer
         }
 
         /// <summary>
+        /// Clean the name to be a valid XML tag name
+        /// </summary>
+        protected virtual String CleanupName(String name)
+        {
+            return System.Text.RegularExpressions.Regex.Replace(name, @"[^\w-]", String.Empty);
+        }
+
+        /// <summary>
         /// Pluralize a name
         /// </summary>
         protected virtual String PluralizeName(String name)
@@ -69,7 +77,7 @@ namespace deuxsucres.XSerializer
         {
             if (type.IsArray)
             {
-                var r = NodeNameFromType(type.GetElementType());
+                var r = CleanupName(NodeNameFromType(type.GetElementType()));
                 return PluralizeName(r);
             }
             else
@@ -84,7 +92,7 @@ namespace deuxsucres.XSerializer
                         Type tintArgType = tint.GetGenericArguments()[0];
                         if (tintArgType != typeof(Object))
                         {
-                            var r = NodeNameFromType(tintArgType);
+                            var r = CleanupName(NodeNameFromType(tintArgType));
                             if (!r.EndsWith("s")) r += "s";
                             return PluralizeName(r);
                         }
@@ -92,7 +100,7 @@ namespace deuxsucres.XSerializer
                     return "Items";
                 }
             }
-            return type.Name;
+            return CleanupName(type.Name);
         }
 
         #endregion
