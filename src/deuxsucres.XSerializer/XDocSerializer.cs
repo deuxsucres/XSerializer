@@ -80,7 +80,7 @@ namespace deuxsucres.XSerializer
                 var r = CleanupName(NodeNameFromType(type.GetElementType()));
                 return PluralizeName(r);
             }
-            else
+            else if (!type.IsValueType && type != typeof(String))
             {
                 if (typeof(IEnumerable).IsAssignableFrom(type))
                 {

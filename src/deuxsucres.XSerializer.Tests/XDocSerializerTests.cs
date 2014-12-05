@@ -109,6 +109,9 @@ namespace deuxsucres.XSerializer.Tests
             node1 = serializer.Serialize(list);
             Assert.Equal("<TestClassSimples><TestClassSimple><Value3>67.89</Value3><Value2>23</Value2><Value4>2014-06-08 11:44:56Z</Value4><Value5>1</Value5></TestClassSimple><TestClassSimple><Value3>-12.67</Value3><Value1>Texte</Value1><Value2>98</Value2><Value4>2014-06-08 11:44:56Z</Value4><Value5>1</Value5></TestClassSimple></TestClassSimples>", node1.ToString(SaveOptions.DisableFormatting));
 
+            node1 = serializer.Serialize(new String[] { "Un", "Deux", "Trois" });
+            Assert.Equal("<Strings><String>Un</String><String>Deux</String><String>Trois</String></Strings>", node1.ToString(SaveOptions.DisableFormatting));
+
             var node2 = new XElement("root");
             serializer.Serialize(array, node2);
             Assert.Equal("<root><root><Value3>67.89</Value3><Value2>23</Value2><Value4>2014-06-08 11:44:56Z</Value4><Value5>1</Value5></root><root><Value3>-12.67</Value3><Value1>Texte</Value1><Value2>98</Value2><Value4>2014-06-08 11:44:56Z</Value4><Value5>1</Value5></root></root>", node2.ToString(SaveOptions.DisableFormatting));
