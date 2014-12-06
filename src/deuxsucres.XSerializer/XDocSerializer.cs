@@ -48,6 +48,14 @@ namespace deuxsucres.XSerializer
         }
 
         /// <summary>
+        /// Clean the name to be a valid XML tag name
+        /// </summary>
+        protected virtual String CleanupName(String name)
+        {
+            return System.Text.RegularExpressions.Regex.Replace(name, @"[^\w-]", String.Empty);
+        }
+
+        /// <summary>
         /// Pluralize a name
         /// </summary>
         protected virtual String PluralizeName(String name)
@@ -69,10 +77,10 @@ namespace deuxsucres.XSerializer
         {
             if (type.IsArray)
             {
-                var r = NodeNameFromType(type.GetElementType());
+                var r = CleanupName(NodeNameFromType(type.GetElementType()));
                 return PluralizeName(r);
             }
-            else
+            else if (!type.IsValueType && type != typeof(String))
             {
                 if (typeof(IEnumerable).IsAssignableFrom(type))
                 {
@@ -84,7 +92,7 @@ namespace deuxsucres.XSerializer
                         Type tintArgType = tint.GetGenericArguments()[0];
                         if (tintArgType != typeof(Object))
                         {
-                            var r = NodeNameFromType(tintArgType);
+                            var r = CleanupName(NodeNameFromType(tintArgType));
                             if (!r.EndsWith("s")) r += "s";
                             return PluralizeName(r);
                         }
@@ -92,7 +100,7 @@ namespace deuxsucres.XSerializer
                     return "Items";
                 }
             }
-            return type.Name;
+            return CleanupName(type.Name);
         }
 
         #endregion
@@ -106,13 +114,13 @@ namespace deuxsucres.XSerializer
         {
             if (value == null) throw new ArgumentNullException("value");
             var type = value.GetType();
-            if (nodeName == null) nodeName = NodeNameFromType(type);
 
             // Check is an object
             if (value is String || (!type.IsClass && type.IsValueType))
                 throw new ArgumentException(String.Format("The value of type '{0}' is not an object.", type.FullName), "value");
 
             // Prepare element and serialize it
+            if (nodeName == null) nodeName = NodeNameFromType(type);
             XElement result = new XElement(nodeName);
             InternalSerialize(value, result, type);
             return result;
@@ -189,7 +197,6 @@ namespace deuxsucres.XSerializer
             // For each property
             foreach (var property in typeValue.GetProperties())
             {
-                if (!property.CanWrite) continue;
                 var v = property.GetValue(value, null);
                 if (v == null) continue;
                 var x = new XElement(property.Name);
@@ -211,6 +218,14 @@ namespace deuxsucres.XSerializer
             if (node == null) throw new ArgumentNullException("node");
             if (target == null) throw new ArgumentNullException("target");
             InternalPopulate(node, target);
+        }
+
+        /// <summary>
+        /// Populate object valeurs from XML text
+        /// </summary>
+        public void Populate(String xml, object target)
+        {
+            Populate(XDocument.Parse(xml).Root, target);
         }
 
         /// <summary>
@@ -361,11 +376,27 @@ namespace deuxsucres.XSerializer
         /// <summary>
         /// Deserialize to a typed value
         /// </summary>
+        public T Deserialize<T>(String xml)
+        {
+            return Deserialize<T>(XDocument.Parse(xml).Root);
+        }
+
+        /// <summary>
+        /// Deserialize to a typed value
+        /// </summary>
         public object Deserialize(XElement node, Type type)
         {
             if (node == null) throw new ArgumentNullException("node");
             if (type == null) throw new ArgumentNullException("type");
             return InternalDeserialize(node, type);
+        }
+
+        /// <summary>
+        /// Deserialize to a typed value
+        /// </summary>
+        public object Deserialize(String xml, Type type)
+        {
+            return Deserialize(XDocument.Parse(xml).Root, type);
         }
 
         /// <summary>
@@ -375,6 +406,14 @@ namespace deuxsucres.XSerializer
         {
             if (node == null) throw new ArgumentNullException("node");
             return InternalDeserialize(node, typeof(Object));
+        }
+
+        /// <summary>
+        /// Deserialize to an untyped value
+        /// </summary>
+        public object Deserialize(String xml)
+        {
+            return Deserialize(XDocument.Parse(xml).Root);
         }
 
         /// <summary>
@@ -450,7 +489,7 @@ namespace deuxsucres.XSerializer
                         case "float":
                         case "double":
                         case "number":
-                            return InternalDeserialize(node, typeof(Double));
+                            return InternalDeserialize(node, typeof(Decimal));
                         case "date":
                         case "datetime":
                             return InternalDeserialize(node, typeof(DateTime));
@@ -486,11 +525,38 @@ namespace deuxsucres.XSerializer
             if (String.Equals("false", value, StringComparison.OrdinalIgnoreCase)) return false;
             Int64 tint;
             if (Int64.TryParse(value, NumberStyles.Any, Culture, out tint)) return tint;
-            Double tdbl;
-            if (Double.TryParse(value, NumberStyles.Any, Culture, out tdbl)) return tdbl;
+            Decimal tdbl;
+            if (Decimal.TryParse(value, NumberStyles.Any, Culture, out tdbl)) return tdbl;
             DateTime tdt;
             if (DateTime.TryParse(value, Culture, DateTimeStyles.AssumeLocal, out tdt)) return tdt;
             return value;
+        }
+
+        Int64? TryParseInt(String value)
+        {
+            Int64 result;
+            if (String.IsNullOrWhiteSpace(value)) return null;
+            if (Int64.TryParse(value, out result))
+                return result;
+            return null;
+        }
+
+        UInt64? TryParseUInt(String value)
+        {
+            UInt64 result;
+            if (String.IsNullOrWhiteSpace(value)) return null;
+            if (UInt64.TryParse(value, out result))
+                return result;
+            return null;
+        }
+
+        Decimal? TryParseFloat(String value)
+        {
+            Decimal result;
+            if (String.IsNullOrWhiteSpace(value)) return null;
+            if (Decimal.TryParse(value, NumberStyles.Any, Culture, out result))
+                return result;
+            return null;
         }
 
         /// <summary>
@@ -498,8 +564,11 @@ namespace deuxsucres.XSerializer
         /// </summary>
         bool TryToConvertValue(Type fromType, String fromValue, out object toValue)
         {
+            Int64? iTmp;
+            UInt64? uiTmp;
+            Decimal? fTmp;
+            DateTime dtTmp;
             toValue = null;
-
             if (fromType == typeof(String))
             {
                 toValue = fromValue;
@@ -524,141 +593,140 @@ namespace deuxsucres.XSerializer
             #region Int32
             else if (fromType == typeof(Int32))
             {
-                toValue = Convert.ToInt32(Int64.Parse(fromValue));
+                toValue = Convert.ToInt32(TryParseInt(fromValue) ?? 0);
             }
             else if (fromType == typeof(Int32?))
             {
-                if (String.IsNullOrWhiteSpace(fromValue))
-                    toValue = (Int32?)null;
+                iTmp = TryParseInt(fromValue);
+                if (iTmp.HasValue)
+                    toValue = (Int32?)Convert.ToInt16(iTmp.Value);
                 else
-                    toValue = (Int32?)Convert.ToInt32(Int64.Parse(fromValue));
+                    toValue = (Int32?)null;
             }
             #endregion
 
             #region Int16
             else if (fromType == typeof(Int16))
             {
-                toValue = Convert.ToInt16(Int64.Parse(fromValue));
+                toValue = Convert.ToInt16(TryParseInt(fromValue) ?? 0);
             }
             else if (fromType == typeof(Int16?))
             {
-                if (String.IsNullOrWhiteSpace(fromValue))
-                    toValue = (Int16?)null;
+                iTmp = TryParseInt(fromValue);
+                if (iTmp.HasValue)
+                    toValue = (Int16?)Convert.ToInt16(iTmp.Value);
                 else
-                    toValue = (Int16?)Convert.ToInt16(Int64.Parse(fromValue));
+                    toValue = (Int16?)null;
             }
             #endregion
 
             #region Int64
             else if (fromType == typeof(Int64))
             {
-                toValue = Int64.Parse(fromValue);
+                toValue = TryParseInt(fromValue) ?? 0;
             }
             else if (fromType == typeof(Int64?))
             {
-                if (String.IsNullOrWhiteSpace(fromValue))
-                    toValue = (Int64?)null;
-                else
-                    toValue = (Int64?)Int64.Parse(fromValue);
+                toValue = TryParseInt(fromValue);
             }
             #endregion
 
             #region UInt32
             else if (fromType == typeof(UInt32))
             {
-                toValue = Convert.ToUInt32(UInt64.Parse(fromValue));
-                return true;
+                toValue = Convert.ToUInt32(TryParseUInt(fromValue) ?? 0);
             }
             else if (fromType == typeof(UInt32?))
             {
-                if (String.IsNullOrWhiteSpace(fromValue))
-                    toValue = (UInt32?)null;
+                uiTmp = TryParseUInt(fromValue);
+                if (uiTmp.HasValue)
+                    toValue = (UInt32?)Convert.ToUInt32(uiTmp.Value);
                 else
-                    toValue = (UInt32?)Convert.ToUInt32(UInt64.Parse(fromValue));
+                    toValue = (UInt32?)null;
             }
             #endregion
 
             #region UInt16
             else if (fromType == typeof(UInt16))
             {
-                toValue = Convert.ToUInt16(UInt64.Parse(fromValue));
+                toValue = Convert.ToUInt16(TryParseUInt(fromValue) ?? 0);
             }
             else if (fromType == typeof(UInt16?))
             {
-                if (String.IsNullOrWhiteSpace(fromValue))
-                    toValue = (UInt16?)null;
+                uiTmp = TryParseUInt(fromValue);
+                if (uiTmp.HasValue)
+                    toValue = (UInt16?)Convert.ToUInt16(uiTmp.Value);
                 else
-                    toValue = (UInt16?)Convert.ToUInt16(UInt64.Parse(fromValue));
+                    toValue = (UInt16?)null;
             }
             #endregion
 
             #region UInt64
             else if (fromType == typeof(UInt64))
             {
-                toValue = UInt64.Parse(fromValue);
+                toValue = TryParseUInt(fromValue) ?? 0;
             }
             else if (fromType == typeof(UInt64?))
             {
-                if (String.IsNullOrWhiteSpace(fromValue))
-                    toValue = (UInt64?)null;
-                else
-                    toValue = (UInt64?)UInt64.Parse(fromValue);
+                toValue = TryParseUInt(fromValue);
             }
             #endregion
 
             #region double
             else if (fromType == typeof(Double))
             {
-                toValue = double.Parse(fromValue, Culture);
+                toValue = Convert.ToDouble(TryParseFloat(fromValue) ?? 0);
             }
             else if (fromType == typeof(Double?))
             {
-                if (String.IsNullOrWhiteSpace(fromValue))
-                    toValue = (double?)null;
+                fTmp = TryParseFloat(fromValue);
+                if (fTmp.HasValue)
+                    toValue = (Double?)Convert.ToDouble(fTmp.Value);
                 else
-                    toValue = (double?)double.Parse(fromValue, Culture);
+                    toValue = (Double?)null;
             }
             #endregion
 
             #region Single
             else if (fromType == typeof(Single))
             {
-                toValue = Single.Parse(fromValue, Culture);
+                toValue = Convert.ToSingle(TryParseFloat(fromValue) ?? 0);
             }
             else if (fromType == typeof(Single?))
             {
-                if (String.IsNullOrWhiteSpace(fromValue))
-                    toValue = (Single?)null;
+                fTmp = TryParseFloat(fromValue);
+                if (fTmp.HasValue)
+                    toValue = (Single?)Convert.ToSingle(fTmp.Value);
                 else
-                    toValue = (Single?)Single.Parse(fromValue, Culture);
+                    toValue = (Single?)null;
             }
             #endregion
 
             #region Decimal
             else if (fromType == typeof(Decimal))
             {
-                toValue = Decimal.Parse(fromValue, Culture);
+                toValue = TryParseFloat(fromValue) ?? 0;
             }
             else if (fromType == typeof(Decimal?))
             {
-                if (String.IsNullOrWhiteSpace(fromValue))
-                    toValue = (Decimal?)null;
-                else
-                    toValue = (Decimal?)Decimal.Parse(fromValue, Culture);
+                toValue = TryParseFloat(fromValue);
             }
             #endregion
 
             #region DateTime
             else if (fromType == typeof(DateTime))
             {
-                toValue = DateTime.Parse(fromValue, Culture, DateTimeStyles.AssumeLocal);
+                if (DateTime.TryParse(fromValue, Culture, DateTimeStyles.AssumeLocal, out dtTmp))
+                    toValue = dtTmp;
+                else
+                    toValue = DateTime.MinValue;
             }
             else if (fromType == typeof(DateTime?))
             {
-                if (String.IsNullOrWhiteSpace(fromValue))
-                    toValue = (DateTime?)null;
+                if (DateTime.TryParse(fromValue, Culture, DateTimeStyles.AssumeLocal, out dtTmp))
+                    toValue = (DateTime?)dtTmp;
                 else
-                    toValue = (DateTime?)DateTime.Parse(fromValue, Culture, DateTimeStyles.AssumeLocal);
+                    toValue = (DateTime?)null;
             }
             #endregion
             else

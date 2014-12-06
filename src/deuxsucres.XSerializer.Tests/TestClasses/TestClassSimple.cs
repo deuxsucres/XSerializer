@@ -15,5 +15,6 @@ namespace deuxsucres.XSerializer.Tests.TestClasses
         public Int64 Value5 { get { return _Value5; } }
         public String Value6 = null;
         public TestClassSimple Value7 = null;
+        public TestClassSimple Value8 { get; set; }
     }
 }
