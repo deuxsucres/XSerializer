@@ -309,7 +309,7 @@ namespace deuxsucres.XSerializer.Tests
             Assert.Equal(1, val.Value5);
 
             val = new TestClassSimple();
-            serializer.Populate(XDocument.Parse("<root value1=\"Text\" VALUE2=\"987\" value3=\"123.456\" value4=\"2014-06-08 11:44:56\" value5=\"123\" />").Root, val);
+            serializer.Populate("<root value1=\"Text\" VALUE2=\"987\" value3=\"123.456\" value4=\"2014-06-08 11:44:56\" value5=\"123\" />", val);
             Assert.Equal("Text", val.Value1);
             Assert.Equal(987, val.Value2);
             Assert.Equal(123.456, val.Value3);
@@ -346,7 +346,7 @@ namespace deuxsucres.XSerializer.Tests
             Assert.Equal("123.456", arr1[2]);
 
             arr1 = new String[8];
-            serializer.Populate(XDocument.Parse("<root><value1>Text</value1><VALUE2>987</VALUE2><value3>123.456</value3><value4>2014-06-08 11:44:56</value4><value5>123</value5></root>").Root, arr1);
+            serializer.Populate("<root><value1>Text</value1><VALUE2>987</VALUE2><value3>123.456</value3><value4>2014-06-08 11:44:56</value4><value5>123</value5></root>", arr1);
             Assert.Equal("Text", arr1[0]);
             Assert.Equal("987", arr1[1]);
             Assert.Equal("123.456", arr1[2]);
@@ -357,7 +357,7 @@ namespace deuxsucres.XSerializer.Tests
             Assert.Equal(null, arr1[7]);
 
             // Null arguments
-            Assert.Throws<ArgumentNullException>(() => serializer.Populate(null, ""));
+            Assert.Throws<ArgumentNullException>(() => serializer.Populate((XElement)null, ""));
             Assert.Throws<ArgumentNullException>(() => serializer.Populate(XDocument.Parse("<root><value1>Text</value1></root>").Root, null));
             // With string
             Assert.Throws<ArgumentException>(() => serializer.Populate(XDocument.Parse("<root><value1>Text</value1></root>").Root, ""));
@@ -413,8 +413,8 @@ namespace deuxsucres.XSerializer.Tests
         public void TestDeserializeError()
         {
             var serializer = new XDocSerializer();
-            Assert.Throws<ArgumentNullException>(() => serializer.Deserialize<String>(null));
-            Assert.Throws<ArgumentNullException>(() => serializer.Deserialize(null));
+            Assert.Throws<ArgumentNullException>(() => serializer.Deserialize<String>((XElement)null));
+            Assert.Throws<ArgumentNullException>(() => serializer.Deserialize((XElement)null));
         }
 
         [Fact]
@@ -436,7 +436,7 @@ namespace deuxsucres.XSerializer.Tests
             Assert.Equal(true, serializer.Deserialize<bool?>(XDocument.Parse("<root>true</root>").Root));
             Assert.Equal(false, serializer.Deserialize<bool?>(XDocument.Parse("<root>FALSE</root>").Root));
             Assert.Equal(true, serializer.Deserialize(XDocument.Parse("<root>true</root>").Root));
-            Assert.Equal(false, serializer.Deserialize(XDocument.Parse("<root>false</root>").Root));
+            Assert.Equal(false, serializer.Deserialize("<root>false</root>"));
         }
 
         [Fact]
@@ -444,11 +444,13 @@ namespace deuxsucres.XSerializer.Tests
         {
             var serializer = new XDocSerializer();
             // Int16
-            Assert.Equal(-16, serializer.Deserialize<Int16>(XDocument.Parse("<root>-16</root>").Root));
+            Assert.Equal((Int16)(-16), serializer.Deserialize<Int16>(XDocument.Parse("<root>-16</root>").Root));
+            Assert.Equal((Int16)(-16), serializer.Deserialize(XDocument.Parse("<root>-16</root>").Root, typeof(Int16)));
             Assert.Equal(0, serializer.Deserialize<Int16>(XDocument.Parse("<root>test</root>").Root));
 
             // Int16?
             Assert.Equal((Int16?)-16, serializer.Deserialize<Int16?>(XDocument.Parse("<root>-16</root>").Root));
+            Assert.Equal((Int16?)-16, serializer.Deserialize("<root>-16</root>", typeof(Int16?)));
             Assert.Equal(null, serializer.Deserialize<Int16?>(XDocument.Parse("<root>test</root>").Root));
 
             // Int32
@@ -619,7 +621,7 @@ namespace deuxsucres.XSerializer.Tests
             Assert.Equal(new DateTime(2014, 12, 3, 19, 43, 56), val.Value7.Value4);
             Assert.Equal(1, val.Value7.Value5);
 
-            val = serializer.Deserialize<TestClassSimple>(XDocument.Parse("<root value1=\"Text\" VALUE2=\"987\" value3=\"123.456\" value4=\"2014-06-08 11:44:56\" value5=\"123\" />").Root);
+            val = serializer.Deserialize<TestClassSimple>("<root value1=\"Text\" VALUE2=\"987\" value3=\"123.456\" value4=\"2014-06-08 11:44:56\" value5=\"123\" />");
             Assert.Equal("Text", val.Value1);
             Assert.Equal(987, val.Value2);
             Assert.Equal(123.456, val.Value3);
@@ -627,7 +629,7 @@ namespace deuxsucres.XSerializer.Tests
             Assert.Equal(1, val.Value5);
 
             // Null arguments
-            Assert.Throws<ArgumentNullException>(() => serializer.Deserialize(null, typeof(TestClassSimple)));
+            Assert.Throws<ArgumentNullException>(() => serializer.Deserialize((XElement)null, typeof(TestClassSimple)));
             Assert.Throws<ArgumentNullException>(() => serializer.Deserialize(XDocument.Parse("<root><value1>Text</value1></root>").Root, null));
 
             // Attribute to object
@@ -718,7 +720,7 @@ namespace deuxsucres.XSerializer.Tests
             Assert.Equal(2.4m, sdic1["val3"]);
             Assert.Equal(new DateTime(2014, 6, 8, 11, 44, 56), sdic1["val4"]);
 
-            var dic2 = serializer.Deserialize<IDictionary<String, object>>(XDocument.Parse(
+            var dic2 = serializer.Deserialize<IDictionary<String, object>>(
                 @"<root val1=""ABC"">
 <value1>Text</value1>
 <VALUE2>987</VALUE2>
@@ -730,7 +732,7 @@ namespace deuxsucres.XSerializer.Tests
     <val3 type=""float"">2.4</val3>
     <val4 type=""date"">2014-06-08 11:44:56</val4>
 </value5>
-</root>").Root);
+</root>");
             Assert.Equal(
                 new string[] { "val1", "value1", "VALUE2", "value3", "value4", "value5" },
                 dic1.Keys.ToArray()

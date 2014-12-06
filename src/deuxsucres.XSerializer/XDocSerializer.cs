@@ -221,6 +221,14 @@ namespace deuxsucres.XSerializer
         }
 
         /// <summary>
+        /// Populate object valeurs from XML text
+        /// </summary>
+        public void Populate(String xml, object target)
+        {
+            Populate(XDocument.Parse(xml).Root, target);
+        }
+
+        /// <summary>
         /// Internal object values population from XML element
         /// </summary>
         protected void InternalPopulate(XElement node, object target)
@@ -368,11 +376,27 @@ namespace deuxsucres.XSerializer
         /// <summary>
         /// Deserialize to a typed value
         /// </summary>
+        public T Deserialize<T>(String xml)
+        {
+            return Deserialize<T>(XDocument.Parse(xml).Root);
+        }
+
+        /// <summary>
+        /// Deserialize to a typed value
+        /// </summary>
         public object Deserialize(XElement node, Type type)
         {
             if (node == null) throw new ArgumentNullException("node");
             if (type == null) throw new ArgumentNullException("type");
             return InternalDeserialize(node, type);
+        }
+
+        /// <summary>
+        /// Deserialize to a typed value
+        /// </summary>
+        public object Deserialize(String xml, Type type)
+        {
+            return Deserialize(XDocument.Parse(xml).Root, type);
         }
 
         /// <summary>
@@ -382,6 +406,14 @@ namespace deuxsucres.XSerializer
         {
             if (node == null) throw new ArgumentNullException("node");
             return InternalDeserialize(node, typeof(Object));
+        }
+
+        /// <summary>
+        /// Deserialize to an untyped value
+        /// </summary>
+        public object Deserialize(String xml)
+        {
+            return Deserialize(XDocument.Parse(xml).Root);
         }
 
         /// <summary>
