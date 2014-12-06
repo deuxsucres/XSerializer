@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -46,6 +47,7 @@ namespace deuxsucres.XSerializer.Tests
         {
             var serializer = new XDocSerializer();
 
+            // Value types are not supported
             Assert.Throws<ArgumentException>(() => serializer.Serialize(123));
             Assert.Throws<ArgumentException>(() => serializer.Serialize(123.456));
             Assert.Throws<ArgumentException>(() => serializer.Serialize(DateTime.Now));
@@ -72,7 +74,7 @@ namespace deuxsucres.XSerializer.Tests
             Assert.Throws<ArgumentException>(() => serializer.Serialize(123));
             Assert.Throws<ArgumentNullException>(() => serializer.Serialize(null));
             Assert.Throws<ArgumentException>(() => serializer.Serialize(new TestClassSimple(), String.Empty));
-
+            
             var node2 = new XElement("root");
             serializer.Serialize(new TestClassSimple() {
                 Value1 = null,
@@ -392,14 +394,14 @@ namespace deuxsucres.XSerializer.Tests
             Assert.Equal("ABC", val["val1"]);
             Assert.Equal("Text", val["value1"]);
             Assert.Equal((Int64)987, val["value2"]);
-            Assert.Equal(123.456, val["value3"]);
+            Assert.Equal(123.456m, val["value3"]);
             Assert.Equal(new DateTime(2014, 6, 8, 11, 44, 56), val["value4"]);
             Assert.IsType<Dictionary<String, Object>>(val["value5"]);
 
             var dic2 = (Dictionary<String, Object>)val["value5"];
             Assert.Equal("Un", dic2["val1"]);
             Assert.Equal((Int64)2, dic2["val2"]);
-            Assert.Equal(2.4, dic2["val3"]);
+            Assert.Equal(2.4m, dic2["val3"]);
             Assert.Equal(new DateTime(2014, 6, 8, 11, 44, 56), dic2["val4"]);
         }
 
@@ -438,85 +440,141 @@ namespace deuxsucres.XSerializer.Tests
         }
 
         [Fact]
-        public void TestDeserializeInt16()
+        public void TestDeserializeInt()
         {
             var serializer = new XDocSerializer();
+            // Int16
             Assert.Equal(-16, serializer.Deserialize<Int16>(XDocument.Parse("<root>-16</root>").Root));
+            Assert.Equal(0, serializer.Deserialize<Int16>(XDocument.Parse("<root>test</root>").Root));
+
+            // Int16?
+            Assert.Equal((Int16?)-16, serializer.Deserialize<Int16?>(XDocument.Parse("<root>-16</root>").Root));
+            Assert.Equal(null, serializer.Deserialize<Int16?>(XDocument.Parse("<root>test</root>").Root));
+
+            // Int32
+            Assert.Equal(32, serializer.Deserialize<Int32>(XDocument.Parse("<root>32</root>").Root));
+            Assert.Equal(0, serializer.Deserialize<Int32>(XDocument.Parse("<root></root>").Root));
+
+            // Int32?
+            Assert.Equal(32, serializer.Deserialize<Int32?>(XDocument.Parse("<root>32</root>").Root));
+            Assert.Equal(null, serializer.Deserialize<Int32?>(XDocument.Parse("<root>test</root>").Root));
+
+            // Int64
+            Assert.Equal(64, serializer.Deserialize<Int64>(XDocument.Parse("<root>64</root>").Root));
+            Assert.Equal(0, serializer.Deserialize<Int64>(XDocument.Parse("<root>test</root>").Root));
+
+            // Int64?
+            Assert.Equal(64, serializer.Deserialize<Int64?>(XDocument.Parse("<root>64</root>").Root));
+            Assert.Equal(null, serializer.Deserialize<Int64?>(XDocument.Parse("<root>test</root>").Root));
+
+            // Non typed
             Assert.Equal((Int64)(-16), serializer.Deserialize(XDocument.Parse("<root>-16</root>").Root));
         }
 
         [Fact]
-        public void TestDeserializeInt32()
+        public void TestDeserializeUInt()
         {
             var serializer = new XDocSerializer();
-            Assert.Equal(32, serializer.Deserialize<Int32>(XDocument.Parse("<root>32</root>").Root));
-            Assert.Equal((Int64)32, serializer.Deserialize(XDocument.Parse("<root>32</root>").Root));
-        }
+            // UInt16
+            Assert.Equal(16, serializer.Deserialize<UInt16>(XDocument.Parse("<root>16</root>").Root));
+            Assert.Equal(0, serializer.Deserialize<UInt16>(XDocument.Parse("<root>-16</root>").Root));
+            Assert.Equal(0, serializer.Deserialize<UInt16>(XDocument.Parse("<root>test</root>").Root));
 
-        [Fact]
-        public void TestDeserializeInt64()
-        {
-            var serializer = new XDocSerializer();
-            Assert.Equal(64, serializer.Deserialize<Int64>(XDocument.Parse("<root>64</root>").Root));
-        }
+            // UInt16?
+            Assert.Equal((UInt16?)16, serializer.Deserialize<UInt16?>(XDocument.Parse("<root>16</root>").Root));
+            Assert.Equal(null, serializer.Deserialize<UInt16?>(XDocument.Parse("<root>-16</root>").Root));
+            Assert.Equal(null, serializer.Deserialize<UInt16?>(XDocument.Parse("<root>test</root>").Root));
 
-        [Fact]
-        public void TestDeserializeUInt16()
-        {
-            var serializer = new XDocSerializer();
-            Assert.Equal((UInt16)16, serializer.Deserialize<UInt16>(XDocument.Parse("<root>16</root>").Root));
-        }
-
-        [Fact]
-        public void TestDeserializeUInt32()
-        {
-            var serializer = new XDocSerializer();
+            // UInt32
             Assert.Equal((UInt32)32, serializer.Deserialize<UInt32>(XDocument.Parse("<root>32</root>").Root));
-        }
+            Assert.Equal((UInt32)0, serializer.Deserialize<UInt32>(XDocument.Parse("<root></root>").Root));
 
-        [Fact]
-        public void TestDeserializeUInt64()
-        {
-            var serializer = new XDocSerializer();
+            // UInt32?
+            Assert.Equal((UInt32?)32, serializer.Deserialize<UInt32?>(XDocument.Parse("<root>32</root>").Root));
+            Assert.Equal(null, serializer.Deserialize<UInt32?>(XDocument.Parse("<root>test</root>").Root));
+
+            // UInt64
             Assert.Equal((UInt64)64, serializer.Deserialize<UInt64>(XDocument.Parse("<root>64</root>").Root));
+            Assert.Equal((UInt64)0, serializer.Deserialize<UInt64>(XDocument.Parse("<root>test</root>").Root));
+
+            // UInt64?
+            Assert.Equal((UInt64?)64, serializer.Deserialize<UInt64?>(XDocument.Parse("<root>64</root>").Root));
+            Assert.Equal(null, serializer.Deserialize<UInt64?>(XDocument.Parse("<root>test</root>").Root));
         }
 
         [Fact]
-        public void TestDeserializeSingle()
+        public void TestDeserializeFloat()
         {
             var serializer = new XDocSerializer();
-            Assert.Equal((Single)123.45, serializer.Deserialize<Single>(XDocument.Parse("<root>123.45</root>").Root));
-            Assert.Equal((Double)123.45, serializer.Deserialize(XDocument.Parse("<root>123.45</root>").Root));
-        }
+            // Single
+            Assert.Equal((Single)(-16), serializer.Deserialize<Single>(XDocument.Parse("<root>-16</root>").Root));
+            Assert.Equal(0, serializer.Deserialize<Single>(XDocument.Parse("<root>test</root>").Root));
 
-        [Fact]
-        public void TestDeserializeDouble()
-        {
-            var serializer = new XDocSerializer();
-            Assert.Equal((Double)123.45, serializer.Deserialize<Double>(XDocument.Parse("<root>123.45</root>").Root));
-            Assert.Equal((Double)123.45, serializer.Deserialize(XDocument.Parse("<root>123.45</root>").Root));
-        }
+            // Single?
+            Assert.Equal((Single)123.45, serializer.Deserialize<Single?>(XDocument.Parse("<root>123.45</root>").Root));
+            Assert.Equal((Single)12345, serializer.Deserialize<Single?>(XDocument.Parse("<root>123,45</root>").Root));
+            Assert.Equal(null, serializer.Deserialize<Single?>(XDocument.Parse("<root>test</root>").Root));
 
-        [Fact]
-        public void TestDeserializeDecimal()
-        {
-            var serializer = new XDocSerializer();
+            // Double
+            Assert.Equal(123.45, serializer.Deserialize<Double>(XDocument.Parse("<root>123.45</root>").Root));
+            Assert.Equal(0, serializer.Deserialize<Double>(XDocument.Parse("<root></root>").Root));
+
+            // Double?
+            Assert.Equal(123.45, serializer.Deserialize<Double?>(XDocument.Parse("<root>123.45</root>").Root));
+            Assert.Equal(null, serializer.Deserialize<Double?>(XDocument.Parse("<root>test</root>").Root));
+
+            // Devimal
             Assert.Equal(123.45m, serializer.Deserialize<Decimal>(XDocument.Parse("<root>123.45</root>").Root));
+            Assert.Equal(0, serializer.Deserialize<Decimal>(XDocument.Parse("<root>test</root>").Root));
+
+            // Decimal?
+            Assert.Equal(123.45m, serializer.Deserialize<Decimal?>(XDocument.Parse("<root>123.45</root>").Root));
+            Assert.Equal(null, serializer.Deserialize<Decimal?>(XDocument.Parse("<root>test</root>").Root));
+
+            // Non typed
+            Assert.Equal(123.45m, serializer.Deserialize(XDocument.Parse("<root>123.45</root>").Root));
+            Assert.Equal(12345L, serializer.Deserialize(XDocument.Parse("<root>123,45</root>").Root));
+
+            // Not invariant culture
+            serializer.Culture = CultureInfo.GetCultureInfo("fr-fr");
+            Assert.Equal((Single)123.45, serializer.Deserialize<Single?>(XDocument.Parse("<root>123,45</root>").Root));
+            Assert.Equal(123.45m, serializer.Deserialize(XDocument.Parse("<root>123,45</root>").Root));
+
         }
 
         [Fact]
         public void TestDeserializeDateTime()
         {
             var serializer = new XDocSerializer();
+            // DateTime
             Assert.Equal(new DateTime(2014, 8, 6), serializer.Deserialize<DateTime>(XDocument.Parse("<root>2014/08/06</root>").Root));
             Assert.Equal(new DateTime(2014, 8, 6, 11, 44, 56), serializer.Deserialize<DateTime>(XDocument.Parse("<root>2014/08/06 11:44:56</root>").Root));
             Assert.Equal(new DateTime(2014, 6, 8), serializer.Deserialize<DateTime>(XDocument.Parse("<root>2014-06-08</root>").Root));
             Assert.Equal(new DateTime(2014, 6, 8, 11, 44, 56), serializer.Deserialize<DateTime>(XDocument.Parse("<root>2014-06-08 11:44:56</root>").Root));
+            Assert.Equal(new DateTime(2014, 8, 6, 11, 44, 56), serializer.Deserialize<DateTime>(XDocument.Parse("<root>08/06/2014 11:44:56</root>").Root));
+            Assert.Equal(DateTime.MinValue, serializer.Deserialize<DateTime>(XDocument.Parse("<root>test</root>").Root));
 
+            // DateTime?
+            Assert.Equal(new DateTime(2014, 8, 6), serializer.Deserialize<DateTime?>(XDocument.Parse("<root>2014/08/06</root>").Root));
+            Assert.Equal(new DateTime(2014, 8, 6, 11, 44, 56), serializer.Deserialize<DateTime?>(XDocument.Parse("<root>2014/08/06 11:44:56</root>").Root));
+            Assert.Equal(new DateTime(2014, 6, 8), serializer.Deserialize<DateTime?>(XDocument.Parse("<root>2014-06-08</root>").Root));
+            Assert.Equal(new DateTime(2014, 6, 8, 11, 44, 56), serializer.Deserialize<DateTime?>(XDocument.Parse("<root>2014-06-08 11:44:56</root>").Root));
+            Assert.Equal(new DateTime(2014, 8, 6, 11, 44, 56), serializer.Deserialize<DateTime?>(XDocument.Parse("<root>08/06/2014 11:44:56</root>").Root));
+            Assert.Equal(null, serializer.Deserialize<DateTime?>(XDocument.Parse("<root>test</root>").Root));
+
+            // Non typed
             Assert.Equal(new DateTime(2014, 8, 6), serializer.Deserialize(XDocument.Parse("<root>2014/08/06</root>").Root));
             Assert.Equal(new DateTime(2014, 8, 6, 11, 44, 56), serializer.Deserialize(XDocument.Parse("<root>2014/08/06 11:44:56</root>").Root));
             Assert.Equal(new DateTime(2014, 6, 8), serializer.Deserialize(XDocument.Parse("<root>2014-06-08</root>").Root));
             Assert.Equal(new DateTime(2014, 6, 8, 11, 44, 56), serializer.Deserialize(XDocument.Parse("<root>2014-06-08 11:44:56</root>").Root));
+            Assert.Equal(new DateTime(2014, 8, 6, 11, 44, 56), serializer.Deserialize(XDocument.Parse("<root>08/06/2014 11:44:56</root>").Root));
+
+            // Not invariant culture
+            serializer.Culture = CultureInfo.GetCultureInfo("fr-fr");
+            Assert.Equal(new DateTime(2014, 8, 6), serializer.Deserialize<DateTime>(XDocument.Parse("<root>2014/08/06</root>").Root));
+            Assert.Equal(new DateTime(2014, 6, 8, 11, 44, 56), serializer.Deserialize(XDocument.Parse("<root>2014-06-08 11:44:56</root>").Root));
+            Assert.Equal(new DateTime(2014, 6, 8, 11, 44, 56), serializer.Deserialize<DateTime>(XDocument.Parse("<root>08/06/2014 11:44:56</root>").Root));
+            Assert.Equal(new DateTime(2014, 6, 8, 11, 44, 56), serializer.Deserialize(XDocument.Parse("<root>08/06/2014 11:44:56</root>").Root));
         }
 
         #endregion
@@ -573,7 +631,10 @@ namespace deuxsucres.XSerializer.Tests
             Assert.Throws<ArgumentNullException>(() => serializer.Deserialize(XDocument.Parse("<root><value1>Text</value1></root>").Root, null));
 
             // Attribute to object
-            Assert.Throws<ArgumentNullException>(() => serializer.Deserialize(XDocument.Parse("<root value7=\"123\"><value1>Text</value1></root>").Root, null));
+            Exception ex = Assert.Throws<ArgumentException>(() => serializer.Deserialize<TestClassSimple>(XDocument.Parse("<root value7=\"123\"><value1>Text</value1></root>").Root));
+            Assert.Equal("Type 'deuxsucres.XSerializer.Tests.TestClasses.TestClassSimple' can't be deserialized from an attribute value.", ex.Message);
+            ex = Assert.Throws<ArgumentException>(() => serializer.Deserialize<TestClassSimple>(XDocument.Parse("<root value8=\"123\"><value1>Text</value1></root>").Root));
+            Assert.Equal("Type 'deuxsucres.XSerializer.Tests.TestClasses.TestClassSimple' can't be deserialized from an attribute value.", ex.Message);
         }
 
         [Fact]
@@ -647,14 +708,14 @@ namespace deuxsucres.XSerializer.Tests
             Assert.Equal("ABC", dic1["val1"]);
             Assert.Equal("Text", dic1["value1"]);
             Assert.Equal((Int64)987, dic1["VALUE2"]);
-            Assert.Equal(123.456, dic1["value3"]);
+            Assert.Equal(123.456m, dic1["value3"]);
             Assert.Equal(new DateTime(2014, 6, 8, 11, 44, 56), dic1["value4"]);
             Assert.IsType<Dictionary<String, Object>>(dic1["value5"]);
 
             var sdic1 = (Dictionary<String, Object>)dic1["value5"];
             Assert.Equal("Un", sdic1["val1"]);
             Assert.Equal((Int64)2, sdic1["val2"]);
-            Assert.Equal(2.4, sdic1["val3"]);
+            Assert.Equal(2.4m, sdic1["val3"]);
             Assert.Equal(new DateTime(2014, 6, 8, 11, 44, 56), sdic1["val4"]);
 
             var dic2 = serializer.Deserialize<IDictionary<String, object>>(XDocument.Parse(
@@ -664,10 +725,10 @@ namespace deuxsucres.XSerializer.Tests
 <value3>123.456</value3>
 <value4>2014-06-08 11:44:56</value4>
 <value5>
-    <val1>Un</val1>
-    <val2>2</val2>
-    <val3>2.4</val3>
-    <val4>2014-06-08 11:44:56</val4>
+    <val1 type=""string"">Un</val1>
+    <val2 type=""int"">2</val2>
+    <val3 type=""float"">2.4</val3>
+    <val4 type=""date"">2014-06-08 11:44:56</val4>
 </value5>
 </root>").Root);
             Assert.Equal(
@@ -677,14 +738,14 @@ namespace deuxsucres.XSerializer.Tests
             Assert.Equal("ABC", dic2["val1"]);
             Assert.Equal("Text", dic2["value1"]);
             Assert.Equal((Int64)987, dic2["value2"]);
-            Assert.Equal(123.456, dic2["value3"]);
+            Assert.Equal(123.456m, dic2["value3"]);
             Assert.Equal(new DateTime(2014, 6, 8, 11, 44, 56), dic2["value4"]);
             Assert.IsType<Dictionary<String, Object>>(dic2["value5"]);
 
             sdic1 = (Dictionary<String, Object>)dic2["value5"];
             Assert.Equal("Un", sdic1["val1"]);
             Assert.Equal((Int64)2, sdic1["val2"]);
-            Assert.Equal(2.4, sdic1["val3"]);
+            Assert.Equal(2.4m, sdic1["val3"]);
             Assert.Equal(new DateTime(2014, 6, 8, 11, 44, 56), sdic1["val4"]);
         }
 
