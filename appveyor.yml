@@ -1,0 +1,28 @@
+version: 1.0.1.{build}
+
+branches:
+  only:
+  - master
+
+configuration: Release
+
+before_build:
+  - nuget restore src\XSerializer.sln
+
+build:
+  publish_nuget: true
+  verbosity: minimal
+
+test_script:
+  - ps: .\src\packages\xunit.runners.2.0.0-beta5-build2785\tools\xunit.console.exe .\src\deuxsucres.XSerializer.Tests\bin\Release\deuxsucres.XSerializer.Tests.dll -appveyor
+
+artifacts:
+- path: src\deuxsucres.XSerializer\bin\Release\*.dll
+  name: lib
+- path: '*.nupkg'
+  name: Nuget
+
+deploy:
+- provider: Environment
+  name: NuGet deuxsucres
+
